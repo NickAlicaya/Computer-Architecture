@@ -7,6 +7,9 @@ LDI= 0b10000010
 PRN= 0b01000111
 HLT= 0b00000001
 MUL= 0b10100010
+PUSH = 0b01000101
+POP = 0b01000110
+ADD = 0b10100000
 
 class CPU:
     """Main CPU class."""
@@ -17,32 +20,43 @@ class CPU:
         self.reg = [0] * 8
         self.pc = 0
         self.halted = False
+        self.SP = 7
 
         self.branchtable = {
         LDI : self.handle_ldi,
         PRN : self.handle_prn,
         MUL : self.handle_mul,
-        HLT : self.handle_hlt
+        HLT : self.handle_hlt,
+        ADD : self.handle_add,
+        PUSH: self.handle_push,
+        POP: self.handle_pop
         }
 
     def handle_ldi(self, reg, value):
         self.reg[reg] = value
-        # self.pc += 3
-
+    
     def handle_prn(self, reg, *args):
         print(self.reg[reg])
-        # self.pc += 2    
     
     def handle_mul(self,opr_a,opr_b):
         # self.reg[opr_a] *= self.reg[opr_b]
         self.alu("MUL",opr_a,opr_b)  
-        # self.pc += 3    
-
+   
     def handle_hlt(self, *args):
-        #  self.pc += 1    
-        # sys.exit()
         self.halted = True
+
+    def handle_add(self,opr_a,opr_b):
+       self.alu("ADD",opr_a,opr_b)  
+         
+    def handle_push(self,opr_a,opr_b):
+        self.SP -= 1
+        MDR = self.reg[opr_a]
+        self.ram_write(self.SP,MDR)
         
+    def handle_pop(self, opr_a, opr_b):
+        self.reg[opr_a] = self.ram_read(self.SP)
+        self.SP += 1
+
 
     def load(self):
         """Load a program into memory."""
