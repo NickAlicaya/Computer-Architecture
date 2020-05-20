@@ -16,6 +16,7 @@ class CPU:
         self.ram = [0] * 256
         self.reg = [0] * 8
         self.pc = 0
+        self.halted = False
 
         self.branchtable = {
         LDI : self.handle_ldi,
@@ -39,7 +40,8 @@ class CPU:
 
     def handle_hlt(self, *args):
         #  self.pc += 1    
-        sys.exit()
+        # sys.exit()
+        self.halted = True
         
 
     def load(self):
@@ -97,17 +99,19 @@ class CPU:
     def run(self):
         """Run the CPU."""
         self.pc = 0
-        halted = False
+        # halted = False
 
-        while not halted:
+        while not self.halted:
 
             IR = self.ram_read(self.pc)
             opr_a = self.ram_read(self.pc + 1)
             opr_b = self.ram_read(self.pc + 2)
+            # 0000 0000
             op_counter = IR >> 6
 
-            self.branchtable[IR](opr_a,opr_b)    
-            self.pc += op_counter + 1
+            if IR in self.branchtable:
+                self.branchtable[IR](opr_a,opr_b)    
+                self.pc += op_counter + 1
 
         # halted = False
 
